@@ -1,0 +1,44 @@
+Текущий курс: <span id="currency"></p>
+
+<script type="text/javascript">
+    Notification.requestPermission();
+
+    var socket = new WebSocket("ws://67.207.73.207:80/");
+
+    var pair = "BTCUSD";
+
+    socket.onopen = function () {
+        console.log("Соединение установлено");
+    };
+
+    socket.onclose = function (event) {
+        if (event.wasClean) {
+            console.log('Соединение закрыто чисто');
+        } else {
+            console.log('Обрыв соединения');
+        }
+        console.log('Код: ' + event.code + ', причина: ' + event.reason);
+    };
+
+    socket.onmessage = function (event) {
+        var data = JSON.parse(event.data);
+        // console.log(data);
+        if ('MarketDataIncrementalRefresh' in data && data.MarketDataIncrementalRefresh.symbol == pair && data.MarketDataIncrementalRefresh.trade.length > 0) {
+            console.log(data.MarketDataIncrementalRefresh.trade[0].price);
+            document.getElementById("currency").innerHTML = data.MarketDataIncrementalRefresh.trade[0].price;
+
+            var audio = new Audio('furrow.mp3');
+            audio.play();
+            var notification = new Notification(data.MarketDataIncrementalRefresh.trade[0].price);
+            
+        }
+        else {
+            // console.log(data);
+        }
+    };
+
+    socket.onerror = function (error) {
+        console.log("Ошибка " + error.message);
+    };
+
+</script>
